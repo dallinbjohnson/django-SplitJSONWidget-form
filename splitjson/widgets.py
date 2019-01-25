@@ -29,8 +29,10 @@ class SplitJSONWidget(forms.Widget):
         })
         attrs['value'] = utils.encoding.force_text(value)
         attrs['id'] = attrs.get('name', None)
-        return u""" <label for="%s">%s:</label>
-        <input%s />""" % (attrs['id'], key, flatatt(attrs))
+        return f"""
+            <label for="{attrs['id']}">{key}:</label>
+            <input{flatatt(attrs)} class='form-control'/>
+        """
 
     def _to_build(self, name, json_obj):
         inputs = []
@@ -64,11 +66,11 @@ class SplitJSONWidget(forms.Widget):
                 if isinstance(el, list) and len(l) == 1:
                     result += '%s' % self._prepare_as_ul(el)
                 elif isinstance(el, list):
-                    result += '<ul>'
+                    result += '<div class="form-group">'
                     result += '%s' % self._prepare_as_ul(el)
-                    result += '</ul>'
+                    result += '</div>'
                 else:
-                    result += '<li>%s</li>' % el
+                    result += '<div class="form-group">%s</div>' % el
             return result
         return ''
 
