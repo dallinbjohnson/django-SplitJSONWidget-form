@@ -99,7 +99,7 @@ class SplitJSONWidget(forms.Widget):
 
     def _as_checkbox_field(self, name, key, value, is_sub=False):
         classes = self.attrs['class']
-        classes[:] = [c for c in classes.split() if c != 'form-control']
+        classes = [c for c in classes.split() if c != 'form-control']
         classes.append("switch")
         attrs = self.build_attrs(self.attrs, {
             "type": 'checkbox',
