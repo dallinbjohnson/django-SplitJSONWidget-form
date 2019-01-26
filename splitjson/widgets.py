@@ -107,7 +107,7 @@ class SplitJSONWidget(forms.Widget):
         checked = '' if not bool(value) else 'checked'
         return f"""
             <label for="{attrs['id']}">{key}:</label>
-            <input{flatatt(attrs)} class='form-control' {checked}/>
+            <input{flatatt(attrs)} class='switch' {checked}/>
         """
 
     def _to_build(self, name, json_obj):
