@@ -180,16 +180,20 @@ class SplitJSONWidget(forms.Widget):
             result = ''
             for item in input_list:
                 class_ex = ''
-                if level == 0:
+                if level == 0 or level == 1:
                     class_ex = 'col-md-6'
 
                 if isinstance(item, list) and len(input_list) == 1:
                     result += '%s' % self._prepare_as_div(item, level)
                 elif isinstance(item, list):
                     if level == 0:
-                        result += f'<div class="form-group {class_ex}"><div class="card card-body">'
+                        result += f'<div class="form-group {class_ex}">'
+                        result += f'<div class="card card-body">'
+                        result += f'<div class="row">'
                         result += '%s' % self._prepare_as_div(item, level + 1)
-                        result += '</div></div>'
+                        result += '</div>'
+                        result += '</div>'
+                        result += '</div>'
                     else:
                         result += f'<div class="form-group {class_ex}">'
                         result += '%s' % self._prepare_as_div(item, level + 1)
