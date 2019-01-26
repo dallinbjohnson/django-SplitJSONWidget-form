@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import datetime
+
 from django import get_version, forms
 from django.forms import Widget
 from django import utils
@@ -34,40 +36,114 @@ class SplitJSONWidget(forms.Widget):
             <input{flatatt(attrs)} class='form-control'/>
         """
 
+    def _as_textarea_field(self, name, key, value, is_sub=False):
+        attrs = self.build_attrs(self.attrs, {
+            "type": 'text',
+            "name": "%s%s%s" % (name, self.separator, key),
+        })
+        attrs['id'] = attrs.get('name', None)
+        return f"""
+            <label for="{attrs['id']}">{key}:</label>
+            <textarea{flatatt(attrs)} class='form-control'>
+                {utils.encoding.force_text(value)}
+            </textarea>
+        """
+
+    def _as_number_field(self, name, key, value, is_sub=False):
+        attrs = self.build_attrs(self.attrs, {
+            "type": 'number',
+            "name": "%s%s%s" % (name, self.separator, key),
+        })
+        attrs['value'] = utils.encoding.force_text(value)
+        attrs['id'] = attrs.get('name', None)
+        return f"""
+            <label for="{attrs['id']}">{key}:</label>
+            <input{flatatt(attrs)} class='form-control'/>
+        """
+
+    def _as_float_field(self, name, key, value, is_sub=False):
+        attrs = self.build_attrs(self.attrs, {
+            "type": 'number',
+            "step": '0.01',
+            "name": "%s%s%s" % (name, self.separator, key),
+        })
+        attrs['value'] = utils.encoding.force_text(value)
+        attrs['id'] = attrs.get('name', None)
+        return f"""
+            <label for="{attrs['id']}">{key}:</label>
+            <input{flatatt(attrs)} class='form-control'/>
+        """
+
+    def _as_date_field(self, name, key, value, is_sub=False):
+        attrs = self.build_attrs(self.attrs, {
+            "type": 'date',
+            "name": "%s%s%s" % (name, self.separator, key),
+        })
+        attrs['value'] = utils.encoding.force_text(value)
+        attrs['id'] = attrs.get('name', None)
+        return f"""
+            <label for="{attrs['id']}">{key}:</label>
+            <input{flatatt(attrs)} class='form-control'/>
+        """
+
+    def _as_datetime_field(self, name, key, value, is_sub=False):
+        attrs = self.build_attrs(self.attrs, {
+            "type": 'datetime-local',
+            "name": "%s%s%s" % (name, self.separator, key),
+        })
+        attrs['value'] = utils.encoding.force_text(value)
+        attrs['id'] = attrs.get('name', None)
+        return f"""
+            <label for="{attrs['id']}">{key}:</label>
+            <input{flatatt(attrs)} class='form-control'/>
+        """
+
     def _to_build(self, name, json_obj):
         inputs = []
         if isinstance(json_obj, list):
             title = name.rpartition(self.separator)[2]
             _l = ['%s:%s' % (title, self.newline)]
             for key, value in enumerate(json_obj):
-                _l.append(self._to_build("%s%s%s" % (name,
-                                                     self.separator, key), value))
+                _l.append(self._to_build("%s%s%s" % (name, self.separator, key), value))
             inputs.extend([_l])
         elif isinstance(json_obj, dict):
             title = name.rpartition(self.separator)[2]
             _l = ['%s:%s' % (title, self.newline)]
             for key, value in json_obj.items():
-                _l.append(self._to_build("%s%s%s" % (name,
-                                                     self.separator, key),
-                                         value))
+                _l.append(self._to_build("%s%s%s" % (name, self.separator, key), value))
             inputs.extend([_l])
-        elif isinstance(json_obj, (str, int, float)):
+        elif isinstance(json_obj, str):
             name, _, key = name.rpartition(self.separator)
-            inputs.append(self._as_text_field(name, key, json_obj))
+            if len(json_obj) > 50:
+                inputs.append(self._as_textarea_field(name, key, json_obj))
+            else:
+                inputs.append(self._as_text_field(name, key, json_obj))
+        elif isinstance(json_obj, int):
+            name, _, key = name.rpartition(self.separator)
+            inputs.append(self._as_number_field(name, key, json_obj))
+        elif isinstance(json_obj, float):
+            name, _, key = name.rpartition(self.separator)
+            inputs.append(self._as_float_field(name, key, json_obj))
+        elif isinstance(json_obj, datetime.date):
+            name, _, key = name.rpartition(self.separator)
+            inputs.append(self._as_date_field(name, key, json_obj))
+        elif isinstance(json_obj, datetime.datetime):
+            name, _, key = name.rpartition(self.separator)
+            inputs.append(self._as_datetime_field(name, key, json_obj))
         elif json_obj is None:
             name, _, key = name.rpartition(self.separator)
             inputs.append(self._as_text_field(name, key, ''))
         return inputs
 
-    def _prepare_as_ul(self, l):
+    def _prepare_as_div(self, l):
         if l:
             result = ''
             for el in l:
                 if isinstance(el, list) and len(l) == 1:
-                    result += '%s' % self._prepare_as_ul(el)
+                    result += '%s' % self._prepare_as_div(el)
                 elif isinstance(el, list):
                     result += '<div class="form-group">'
-                    result += '%s' % self._prepare_as_ul(el)
+                    result += '%s' % self._prepare_as_div(el)
                     result += '</div>'
                 else:
                     result += '<div class="form-group">%s</div>' % el
@@ -158,7 +234,7 @@ class SplitJSONWidget(forms.Widget):
         except (TypeError, KeyError):
             pass
         inputs = self._to_build(name, value or {})
-        result = self._prepare_as_ul(inputs)
+        result = self._prepare_as_div(inputs)
         if self.debug:
             # render json as well
             source_data = u'<hr/>Source data: <br/>%s<hr/>' % str(value)
