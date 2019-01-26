@@ -114,14 +114,35 @@ class SplitJSONWidget(forms.Widget):
             <input{flatatt(attrs)} {checked}/>
         """
 
+    def _as_select_field(self, name, key, value, is_sub=False):
+        attrs = self.build_attrs(self.attrs, {
+            "size": "none",
+            "name": "%s%s%s" % (name, self.separator, key),
+        })
+        # attrs['value'] = utils.encoding.force_text(value)
+        attrs['id'] = attrs.get('name', None)
+        options = ''
+        for option in value:
+            options += f'<option value="{option}">{option}</option>'
+        return f"""
+            <label for="{attrs['id']}">{key}:</label>
+            <select{flatatt(attrs)}>
+                {options}
+            </select>
+        """
+
     def _to_build(self, name, json_obj):
         inputs = []
         if isinstance(json_obj, list):
-            title = name.rpartition(self.separator)[2]
-            _l = []  # ['%s:%s' % (title, self.newline)]
-            for key, value in enumerate(json_obj):
-                _l.append(self._to_build("%s%s%s" % (name, self.separator, key), value))
-            inputs.extend([_l])
+            if all(isinstance(item, str) for item in json_obj):
+                name, _, key = name.rpartition(self.separator)
+                inputs.append(self._as_select_field(name, key, json_obj))
+            else:
+                title = name.rpartition(self.separator)[2]
+                _l = []  # ['%s:%s' % (title, self.newline)]
+                for key, value in enumerate(json_obj):
+                    _l.append(self._to_build("%s%s%s" % (name, self.separator, key), value))
+                inputs.extend([_l])
         elif isinstance(json_obj, dict):
             title = name.rpartition(self.separator)[2]
             _l = []  # ['%s:%s' % (title, self.newline)]
