@@ -134,7 +134,7 @@ class SplitJSONWidget(forms.Widget):
     def _to_build(self, name, json_obj):
         inputs = []
         if isinstance(json_obj, list):
-            if all(isinstance(item, str) for item in json_obj):
+            if all(isinstance(item, (str, int, float, bool)) for item in json_obj):
                 name, _, key = name.rpartition(self.separator)
                 inputs.append(self._as_select_field(name, key, json_obj))
             else:
