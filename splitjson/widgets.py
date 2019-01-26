@@ -218,7 +218,7 @@ class SplitJSONWidget(forms.Widget):
                     obj = {}
                     index = None
                     if apx != root_node:
-                        for key, val in copy_raw_data.items():
+                        for key, val in list(copy_raw_data.items()):
                             head, _, t = key.rpartition(self.separator)
                             _, _, index = head.rpartition(self.separator)
                             if key is k:
@@ -242,7 +242,7 @@ class SplitJSONWidget(forms.Widget):
                     # parse dict
                     d = {}
                     if apx != root_node:
-                        for key, val in copy_raw_data.items():
+                        for key, val in list(copy_raw_data.items()):
                             _, _, t = key.rpartition(self.separator)
                             try:
                                 int(t)
@@ -261,7 +261,7 @@ class SplitJSONWidget(forms.Widget):
             else:
                 return v
 
-        for k, v in raw_data.iteritems():
+        for k, v in list(raw_data.items()):
             if k in copy_raw_data:
                 # to transform value from list to string
                 v = v[0] if isinstance(v, list) and len(v) is 1 else v
