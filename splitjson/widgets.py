@@ -33,7 +33,7 @@ class SplitJSONWidget(forms.Widget):
         attrs['id'] = attrs.get('name', None)
         return f"""
             <label for="{attrs['id']}">{key}:</label>
-            <input{flatatt(attrs)} class='form-control'/>
+            <input{flatatt(attrs)} />
         """
 
     def _as_textarea_field(self, name, key, value, is_sub=False):
@@ -43,7 +43,7 @@ class SplitJSONWidget(forms.Widget):
         attrs['id'] = attrs.get('name', None)
         return f"""
             <label for="{attrs['id']}">{key}:</label>
-            <textarea{flatatt(attrs)} class='form-control'>
+            <textarea{flatatt(attrs)}>
                 {utils.encoding.force_text(value)}
             </textarea>
         """
@@ -57,7 +57,7 @@ class SplitJSONWidget(forms.Widget):
         attrs['id'] = attrs.get('name', None)
         return f"""
             <label for="{attrs['id']}">{key}:</label>
-            <input{flatatt(attrs)} class='form-control'/>
+            <input{flatatt(attrs)} />
         """
 
     def _as_float_field(self, name, key, value, is_sub=False):
@@ -70,7 +70,7 @@ class SplitJSONWidget(forms.Widget):
         attrs['id'] = attrs.get('name', None)
         return f"""
             <label for="{attrs['id']}">{key}:</label>
-            <input{flatatt(attrs)} class='form-control'/>
+            <input{flatatt(attrs)} />
         """
 
     def _as_date_field(self, name, key, value, is_sub=False):
@@ -82,7 +82,7 @@ class SplitJSONWidget(forms.Widget):
         attrs['id'] = attrs.get('name', None)
         return f"""
             <label for="{attrs['id']}">{key}:</label>
-            <input{flatatt(attrs)} class='form-control'/>
+            <input{flatatt(attrs)} />
         """
 
     def _as_datetime_field(self, name, key, value, is_sub=False):
@@ -94,12 +94,16 @@ class SplitJSONWidget(forms.Widget):
         attrs['id'] = attrs.get('name', None)
         return f"""
             <label for="{attrs['id']}">{key}:</label>
-            <input{flatatt(attrs)} class='form-control'/>
+            <input{flatatt(attrs)} />
         """
 
     def _as_checkbox_field(self, name, key, value, is_sub=False):
+        classes = self.attrs['class']
+        classes[:] = [c for c in classes.split() if c != 'form-control']
+        classes.append("switch")
         attrs = self.build_attrs(self.attrs, {
             "type": 'checkbox',
+            "class": " ".join(classes),
             "name": "%s%s%s" % (name, self.separator, key),
         })
         attrs['value'] = utils.encoding.force_text(value)
@@ -107,7 +111,7 @@ class SplitJSONWidget(forms.Widget):
         checked = '' if not bool(value) else 'checked'
         return f"""
             <label for="{attrs['id']}">{key}:</label>
-            <input{flatatt(attrs)} class='switch' {checked}/>
+            <input{flatatt(attrs)} {checked}/>
         """
 
     def _to_build(self, name, json_obj):
