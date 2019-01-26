@@ -157,11 +157,14 @@ class SplitJSONWidget(forms.Widget):
     def _prepare_as_div(self, l):
         if l:
             result = ''
+            col = 'col-md-6'
             for el in l:
                 if isinstance(el, list) and len(l) == 1:
                     result += '%s' % self._prepare_as_div(el)
                 elif isinstance(el, list):
-                    result += '<div class="form-group col-md-6">'
+                    result += f'<div class="form-group {col}">'
+                    if col:
+                        col = ''
                     result += '%s' % self._prepare_as_div(el)
                     result += '</div>'
                 else:
