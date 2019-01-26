@@ -118,13 +118,13 @@ class SplitJSONWidget(forms.Widget):
         inputs = []
         if isinstance(json_obj, list):
             title = name.rpartition(self.separator)[2]
-            _l = ['%s:%s' % (title, self.newline)]
+            _l = []  # ['%s:%s' % (title, self.newline)]
             for key, value in enumerate(json_obj):
                 _l.append(self._to_build("%s%s%s" % (name, self.separator, key), value))
             inputs.extend([_l])
         elif isinstance(json_obj, dict):
             title = name.rpartition(self.separator)[2]
-            _l = ['%s:%s' % (title, self.newline)]
+            _l = []  # ['%s:%s' % (title, self.newline)]
             for key, value in json_obj.items():
                 _l.append(self._to_build("%s%s%s" % (name, self.separator, key), value))
             inputs.extend([_l])
@@ -154,21 +154,24 @@ class SplitJSONWidget(forms.Widget):
             inputs.append(self._as_text_field(name, key, ''))
         return inputs
 
-    def _prepare_as_div(self, l):
-        if l:
+    def _prepare_as_div(self, input_list, level):
+        if input_list:
             result = ''
-            col = 'col-md-6'
-            for el in l:
-                if isinstance(el, list) and len(l) == 1:
-                    result += '%s' % self._prepare_as_div(el)
-                elif isinstance(el, list):
-                    result += f'<div class="form-group {col}">'
-                    if col:
-                        col = ''
-                    result += '%s' % self._prepare_as_div(el)
+            for item in input_list:
+                class_ex = ''
+                if level == 0:
+                    class_ex = 'row'
+                elif level == 1:
+                    class_ex = 'col-md-6 card card-body'
+
+                if isinstance(item, list) and len(input_list) == 1:
+                    result += '%s' % self._prepare_as_div(item, level + 1)
+                elif isinstance(item, list):
+                    result += f'<div class="form-group {class_ex}">'
+                    result += '%s' % self._prepare_as_div(item, level + 1)
                     result += '</div>'
                 else:
-                    result += '<div class="form-group">%s</div>' % el
+                    result += '<div class="form-group">%s</div>' % item
             return result
         return ''
 
@@ -256,7 +259,8 @@ class SplitJSONWidget(forms.Widget):
         except (TypeError, KeyError):
             pass
         inputs = self._to_build(name, value or {})
-        result = self._prepare_as_div(inputs)
+        result = self._prepare_as_div(inputs, 0)
+        result = f'<div class="row">{result}</div>'
         if self.debug:
             # render json as well
             source_data = u'<hr/>Source data: <br/>%s<hr/>' % str(value)
