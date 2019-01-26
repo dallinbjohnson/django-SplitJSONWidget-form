@@ -161,11 +161,11 @@ class SplitJSONWidget(forms.Widget):
                 if isinstance(el, list) and len(l) == 1:
                     result += '%s' % self._prepare_as_div(el)
                 elif isinstance(el, list):
-                    result += '<div class="form-group">'
+                    result += '<div class="form-group col-md-6">'
                     result += '%s' % self._prepare_as_div(el)
                     result += '</div>'
                 else:
-                    result += '<div class="form-group">%s</div>' % el
+                    result += '<div class="form-group col-md-6">%s</div>' % el
             return result
         return ''
 
