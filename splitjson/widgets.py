@@ -104,14 +104,15 @@ class SplitJSONWidget(forms.Widget):
         attrs = self.build_attrs(self.attrs, {
             "type": 'checkbox',
             "class": " ".join(classes),
-            "name": "%s%s%s" % (name, self.separator, key),
+            "onclick": "this.previousSibling.value=!JSON.parse(this.previousSibling.value)",
         })
+        hidden_name = "%s%s%s" % (name, self.separator, key)
         attrs['value'] = utils.encoding.force_text(value)
         attrs['id'] = attrs.get('name', None)
         checked = '' if not bool(value) else 'checked'
         return f"""
             <label for="{attrs['id']}">{key}:</label>
-            <input{flatatt(attrs)} {checked}/>
+            <input type="hidden" name="{hidden_name}" value="{attrs['value'].lower()}"><input{flatatt(attrs)} {checked}/>
         """
 
     def _as_select_field(self, name, key, value, is_sub=False):
