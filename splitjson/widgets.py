@@ -38,7 +38,6 @@ class SplitJSONWidget(forms.Widget):
 
     def _as_textarea_field(self, name, key, value, is_sub=False):
         attrs = self.build_attrs(self.attrs, {
-            "type": 'text',
             "name": "%s%s%s" % (name, self.separator, key),
         })
         attrs['id'] = attrs.get('name', None)
@@ -98,6 +97,19 @@ class SplitJSONWidget(forms.Widget):
             <input{flatatt(attrs)} class='form-control'/>
         """
 
+    def _as_checkbox_field(self, name, key, value, is_sub=False):
+        attrs = self.build_attrs(self.attrs, {
+            "type": 'checkbox',
+            "name": "%s%s%s" % (name, self.separator, key),
+        })
+        attrs['value'] = utils.encoding.force_text(value)
+        attrs['id'] = attrs.get('name', None)
+        checked = '' if not bool(value) else 'checked'
+        return f"""
+            <label for="{attrs['id']}">{key}:</label>
+            <input{flatatt(attrs)} class='form-control' {checked}/>
+        """
+
     def _to_build(self, name, json_obj):
         inputs = []
         if isinstance(json_obj, list):
@@ -118,6 +130,9 @@ class SplitJSONWidget(forms.Widget):
                 inputs.append(self._as_textarea_field(name, key, json_obj))
             else:
                 inputs.append(self._as_text_field(name, key, json_obj))
+        elif isinstance(json_obj, bool):
+            name, _, key = name.rpartition(self.separator)
+            inputs.append(self._as_checkbox_field(name, key, json_obj))
         elif isinstance(json_obj, int):
             name, _, key = name.rpartition(self.separator)
             inputs.append(self._as_number_field(name, key, json_obj))
