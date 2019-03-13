@@ -148,7 +148,8 @@ class SplitJSONWidget(forms.Widget):
             title = name.rpartition(self.separator)[2]
             _l = []  # ['%s:%s' % (title, self.newline)]
             for key, value in json_obj.items():
-                _l.append(self._to_build("%s%s%s" % (name, self.separator, key), value))
+                if value != {}:
+                    _l.append(self._to_build("%s%s%s" % (name, self.separator, key), value))
             inputs.extend([_l])
         elif isinstance(json_obj, str):
             name, _, key = name.rpartition(self.separator)
@@ -200,7 +201,10 @@ class SplitJSONWidget(forms.Widget):
                         result += '%s' % self._prepare_as_div(item, level + 1)
                         result += '</div>'
                 else:
-                    result += '<div class="form-group">%s</div>' % item
+                    if level == 1:
+                        result += '<div class="form-group col-md-12">%s</div>' % item
+                    else:
+                        result += '<div class="form-group">%s</div>' % item
             return result
         return ''
 
